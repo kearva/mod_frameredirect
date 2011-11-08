@@ -12,9 +12,9 @@ typedef struct {
 
 module AP_MODULE_DECLARE_DATA frameredirect_module ;
 
-int isAlpha(char c)
+int isEntity(char c)
 {
-  return ('A' <= c && 'Z' >= c || 'a' <= c && 'z' >= c);
+  return ('A' <= c && 'Z' >= c || 'a' <= c && 'z' >= c || ';' == c);
 }
 
 int isEscaped(const char* str)
@@ -23,7 +23,7 @@ int isEscaped(const char* str)
 	if (!len || str[0] != '&') return 0;
 	if (len > 10) len = 10;
 
-	while(++idx < len && isAlpha(str[idx])) {
+	while(++idx < len && isEntity(str[idx])) {
 		if(str[idx] == ';') return (idx > 2);
 	}
 	return 0;
