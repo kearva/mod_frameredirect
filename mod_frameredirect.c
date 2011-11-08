@@ -19,7 +19,7 @@ int isAlpha(char c)
 
 int isEscaped(const char* str)
 {
-	int idx, len = strlen(str);
+	int idx = 0, len = strlen(str);
 	if (!len || str[0] != '&') return 0;
 	if (len > 10) len = 10;
 
