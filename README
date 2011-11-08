@@ -1,3 +1,6 @@
+This is a module to make clocked forwardings directly from the apache
+confguration, this 
+
 == Install ==
 
 Use the apxs2 script included by apache:
