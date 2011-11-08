@@ -12,7 +12,7 @@ typedef struct {
 
 module AP_MODULE_DECLARE_DATA frameredirect_module ;
 
-int isAlpa(char c)
+int isAlpha(char c)
 {
   return ('A' <= c && 'Z' >= c || 'a' <= c && 'z' >= c);
 }
@@ -144,7 +144,7 @@ static int frameredirect_handler(request_rec* r)
 
 	// Escape the description and title if they are set.
 	description = escapestring(r->pool,conf->description);
-	if (! title = escapestring(r->pool, conf->title)) {
+	if (! (title = escapestring(r->pool, conf->title))) {
 		// The title is not set set the hostname insted.
 		title = (char *)r->hostname;
 	}
