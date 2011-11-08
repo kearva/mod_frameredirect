@@ -17,26 +17,22 @@ int isAlpa(char c) {
 }
 
 int isEscaped(const char* str) {
-	if(str[0] != '&') return 0;
 	int idx, len = strlen(str);
+	if (!len || str[0] != '&') return 0;
+	if (len > 10) len = 10;
 
-	for(idx = 1; (idx < len) && (idx < 10); idx++) {
-		if(str[idx] == ';') {
-			if(idx > 2) {
-				return 1;
-			} else {
-				return 0;
-			}
-		}
-		if(!isAlpa(str[idx])) {
-			return 0;
-		}
+	while(++idx < len && isAlpha(str[idx])) {
+		if(str[idx] == ';') return (idx > 2);
 	}
 	return 0;
 }
 
+
+
 char* escapestring(apr_pool_t* pool,const char* str) {
 	int idx, cnt, len;
+
+	if(str == NULL) return NULL;
 
 	len = strlen(str);
 
@@ -143,7 +139,7 @@ static int frameredirect_handler(request_rec* r)
 		strncat(url, r->uri, rlen);
 	}
 
-	ap_set_content_type(r, "text/html;charset=utf-8");
+	ap_set_content_type(r, "text/html;charset=ISO-8859-1");
 
 	// Check if the description is set.
 	if(conf->description) {
@@ -177,7 +173,7 @@ static int frameredirect_handler(request_rec* r)
 	ap_rputs("<frameset cols=\"100%,*\" style=\"border: none 0px #ffffff; margin: 0; padding:0;\">", r);
 	ap_rprintf(r, "<frame name=\"_main\" marginwidth=\"10\" marginheight=\"10\" src=\"%s\">" , url);
 	ap_rputs("<noframes>",r);
-	ap_rprintf(r, "<body>The document is located <a href=\"%s\">here</a>.</body>", url);
+	ap_rprintf(r, "<p>The document is located <a href=\"%s\">here</a>.</p>", url);
 	ap_rputs("</noframes></frameset>", r);
 	ap_rputs("</html>\n", r);
 
