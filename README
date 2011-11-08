@@ -1,5 +1,5 @@
-This is a module to make clocked forwardings directly from the apache
-confguration, this 
+This is a module to make clocked forwarding directly from the apache configuration. This code is simple and small, thereby this will be faster and more efficient then calling an external program to handle the same tasks.
+
 
 == Install ==
 
@@ -13,7 +13,7 @@ apxs2 -i -a -c mod_frameredirect.c
 To use this module for one or more virtual hosts, just add set the handler to 
 "frameredirect" and add the FrameRedirectUrl.
 
-This module takes three aruments from server confguration:
+This module takes three arguments from server configuration:
 FrameRedirectUrl [The url to forward to]
 FrameRedirectTitle [Title to be show] (optional)
 FrameRedirectDescription [metadata description] (optional)
@@ -27,7 +27,7 @@ Example:
         SetHandler frameredirect
         FrameRedirectUrl http://www.example.com/test/
         FrameRedirectTitle "Test site title"
-        FrameRedirectDescription "This is a discription of the page"
+        FrameRedirectDescription "This is a description of the page"
 
 </VirtualHost>
 
