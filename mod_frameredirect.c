@@ -12,11 +12,13 @@ typedef struct {
 
 module AP_MODULE_DECLARE_DATA frameredirect_module ;
 
-int isAlpa(char c) {
-	return (('A' <= c) && ('Z' >= c)) || (('a' <= c) && ('z' >= c));
+int isAlpa(char c)
+{
+  return ('A' <= c && 'Z' >= c || 'a' <= c && 'z' >= c);
 }
 
-int isEscaped(const char* str) {
+int isEscaped(const char* str)
+{
 	int idx, len = strlen(str);
 	if (!len || str[0] != '&') return 0;
 	if (len > 10) len = 10;
@@ -27,12 +29,11 @@ int isEscaped(const char* str) {
 	return 0;
 }
 
-
-
-char* escapestring(apr_pool_t* pool,const char* str) {
+char* escapestring(apr_pool_t* pool,const char* str)
+{
 	int idx, cnt, len;
 
-	if(str == NULL) return NULL;
+	if (str == NULL) return NULL;
 
 	len = strlen(str);
 
@@ -139,52 +140,42 @@ static int frameredirect_handler(request_rec* r)
 		strncat(url, r->uri, rlen);
 	}
 
-	ap_set_content_type(r, "text/html;charset=ISO-8859-1");
+	ap_set_content_type(r, "text/html; charset=utf-8");
 
-	// Check if the description is set.
-	if(conf->description) {
-		// Check if there is any characters to escape.
-		if(strcspn(conf->description, "<>&\"") < strlen(conf->description)) {
-			description = escapestring(r->pool,conf->description);
-		} else {
-			description = (char *)conf->description;
-		}
-	}
-
-	// Check if the title is set.
-	if(conf->title) {
-		// Check if there is any characters to escape.
-		if(strcspn(conf->title, "<>&\"") < strlen(conf->title)) {
-			title = escapestring(r->pool, conf->title);
-		} else {
-			title = (char *)conf->title;
-		}
-	} else {
+	// Escape the description and title if they are set.
+	description = escapestring(r->pool,conf->description);
+	if (! title = escapestring(r->pool, conf->title)) {
 		// The title is not set set the hostname insted.
 		title = (char *)r->hostname;
 	}
 
-	ap_rputs("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Frameset//EN\" \"http://www.w3.org/TR/1998/REC-html40-19980424/frameset.dtd\">\n", r);
-	ap_rputs("<html><head>",r);
-	ap_rprintf(r, "<title>%s</title>",title);
+	ap_rputs("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\"\n", r);
+	ap_rputs("                      \"http://www.w3.org/TR/html4/frameset.dtd\">\n", r);
+	ap_rputs("<HTML>\n", r);
+	ap_rputs("  <HEAD>\n", r);
+	ap_rprintf(r, "    <TITLE>%s</TITLE>", title);
 	if(description) {
-		ap_rprintf(r, "<meta name=\"Description\" content=\"%s\"></head>", description);
+		ap_rprintf(r, "    <META NAME=\"Description\" CONTENT=\"%s\">\n", description);
 	}
-	ap_rputs("<frameset cols=\"100%,*\" style=\"border: none 0px #ffffff; margin: 0; padding:0;\">", r);
-	ap_rprintf(r, "<frame name=\"_main\" marginwidth=\"10\" marginheight=\"10\" src=\"%s\">" , url);
-	ap_rputs("<noframes>",r);
-	ap_rprintf(r, "<p>The document is located <a href=\"%s\">here</a>.</p>", url);
-	ap_rputs("</noframes></frameset>", r);
-	ap_rputs("</html>\n", r);
+	ap_rputs("  </HEAD>\n", r);
+	ap_rputs("  <FRAMESET ROWS=\"100%,*\" STYLE=\"border: none 0px #ffffff; margin: 0; padding:0;\">\n", r);
+	ap_rprintf(r, "    <FRAME NAME=\"_main\" MARGINWIDTH=\"10\" MARGINHEIGHT=\"10\" SRC=\"%s\">\n" , url);
+	ap_rputs("    <NOFRAMES>\n", r);
+	ap_rprintf(r, "    <P>The document is located <A HREF=\"%s\">here</A>.</P>\n", url);
+	ap_rputs("    </NOFRAMES>\n", r);
+	ap_rputs("  </FRAMESET>\n", r);
+	ap_rputs("</HTML>\n", r);
 
 	return OK;
 }
 
-static void* frameredirect_config(apr_pool_t* pool, char* x) {
+static void* frameredirect_config(apr_pool_t* pool, char* x)
+{
 	return apr_pcalloc(pool, sizeof(frame_cfg)) ;
 }
 
-static void* frameredirect_cfg_merge(apr_pool_t* pool, void* BASE, void* ADD) {
+static void* frameredirect_cfg_merge(apr_pool_t* pool, void* BASE, void* ADD)
+{
 	frame_cfg* base = (frame_cfg*) BASE ;
 	frame_cfg* add = (frame_cfg*) ADD ;
 	frame_cfg* conf = apr_palloc(pool, sizeof(frame_cfg)) ;
