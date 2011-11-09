@@ -1,0 +1,10 @@
+Installation requires a compiler, standard system include files and
+the usual Apache development libraries.
+
+Use the apxs2 script included in your Apache distribution to perform
+the installation:
+
+apxs2 -i -a -c mod_frameredirect.c
+
+In Debian this will create a standard load script and enable the
+module from the next Apache server restart.
