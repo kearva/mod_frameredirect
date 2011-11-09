@@ -20,7 +20,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20111109-02"
+#define MOD_FRAMEREDIRECT_VERSION "20111109-03"
 
 typedef struct {
 	const char* url;
