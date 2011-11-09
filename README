@@ -3,6 +3,8 @@ directly from the apache configuration. This code is simple and small,
 and is faster and more efficient then calling an external program to
 handle the same tasks.
 
+Project home page: https://github.com/kearva/mod_frameredirect
+
 === Install ===
 
 Installation requires a compiler, standard system include files and
@@ -60,3 +62,9 @@ FrameRedirectDescription [metadata description] (optional)
     </NOFRAMES>
   </FRAMESET>
 </HTML>
+
+
+== Authors and contributors ==
+
+Kent Are Varmedal (kearva)
+Jan Ingvoldstad (jani)

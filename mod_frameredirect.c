@@ -12,6 +12,10 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+   ******
+
+   Project home page: https://github.com/kearva/mod_frameredirect
 */
 
 #include <httpd.h>
@@ -20,7 +24,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20111109-02"
+#define MOD_FRAMEREDIRECT_VERSION "20111109-03"
 
 typedef struct {
 	const char* url;
