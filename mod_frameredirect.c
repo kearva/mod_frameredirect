@@ -35,14 +35,23 @@ typedef struct {
 module AP_MODULE_DECLARE_DATA frameredirect_module;
 
 /*
- * is_entity_char() checks whether a char is a valid part of an HTML
- * character entity
+ * is_alphe_char() checks whether a char is a part of the alphabeth.
  */
 int
-is_entity_char(char c)
+is_alpha_char(char c)
 {
-  return ('A' <= c && 'Z' >= c || 'a' <= c && 'z' >= c || ';' == c);
+  return ('A' <= c && 'Z' >= c || 'a' <= c && 'z' >= c);
 }
+
+/*
+ * is_numberic_char() checks whether a char is a number
+ */
+int
+is_numeric_char(char c)
+{
+  return ('0' <= c && '9' >= c);
+}
+
 
 /*
  * is_entity() checks whether a string is an HTML character entity
@@ -52,10 +61,13 @@ is_entity(const char* str)
 {
 	int idx = 0, len = strlen(str);
 	if (!len || str[0] != '&') return 0;
-	if (len > 10) len = 10;
+	if (len > 20) len = 20;
 
-	while (++idx < len && is_entity_char(str[idx])) {
-		if (str[idx] == ';') return (idx > 2);
+	while (++idx < len && is_alpha_char(str[idx]));
+	if (str[idx] == ';') return (idx > 2); // End found, it's done.
+	if (str[idx] == '#') { // It's a start of a numeric entity
+		while(++idx < len && is_numeric_char(str[idx]));
+		if(str[idx] == ';') return (idx > 2); 
 	}
 	return 0;
 }
