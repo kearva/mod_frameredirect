@@ -1,33 +1,56 @@
-This is a module to make clocked forwarding directly from the apache configuration. This code is simple and small, thereby this will be faster and more efficient then calling an external program to handle the same tasks.
+This is a module to make cloaked forwarding with a FRAME wrapper
+directly from the apache configuration. This code is simple and small,
+and is faster and more efficient then calling an external program to
+handle the same tasks.
 
-
-== Install ==
+=== Install ===
 
 Use the apxs2 script included by apache:
 
 apxs2 -i -a -c mod_frameredirect.c
 
 
-== Configure ==
+=== Apache configuration ===
 
-To use this module for one or more virtual hosts, just add set the handler to 
-"frameredirect" and add the FrameRedirectUrl.
+To use this module in a server configuration, you need to set the
+handler "frameredirect" and add the URL with the directive
+FrameRedirectUrl. Other directives are optional.
 
-This module takes three arguments from server configuration:
-FrameRedirectUrl [The url to forward to]
-FrameRedirectTitle [Title to be show] (optional)
+The module handles the following three directives, within the context
+of a server configuration. The directives are not valid per directory
+or in .htaccess.
+
+FrameRedirectUrl [the url to forward to]
+FrameRedirectTitle [site title] (optional)
 FrameRedirectDescription [metadata description] (optional)
 
-Example:
+
+== Example ==
 
 <VirtualHost *:80>
         ServerName test.example.com
-        ServerAdmin webmaster@localhost
+        ServerAdmin webmaster@example.com
 
         SetHandler frameredirect
         FrameRedirectUrl http://www.example.com/test/
         FrameRedirectTitle "Test site title"
         FrameRedirectDescription "This is a description of the page"
-
 </VirtualHost>
 
+
+== Resulting HTML ==
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN"
+                      "http://www.w3.org/TR/html4/frameset.dtd">
+<HTML>
+  <HEAD>
+    <TITLE>Test site title</TITLE>
+    <META NAME="Description" CONTENT="This is a description of the page">
+  </HEAD>
+  <FRAMESET ROWS="100%,*" STYLE="border: none 0px #ffffff; margin: 0; padding:0;">
+    <FRAME NAME="_main" MARGINWIDTH="10" MARGINHEIGHT="10" SRC="http://www.example.com/test/">
+    <NOFRAMES>
+      <P>The document is located <A HREF="http://www.example.com/test/">here</A>.</P>
+    </NOFRAMES>
+  </FRAMESET>
+</HTML>
