@@ -32,8 +32,11 @@ FrameRedirectUrl [the url to forward to]
 FrameRedirectTitle [site title] (optional)
 FrameRedirectDescription [metadata description] (optional)
 
+or
 
-== Example ==
+FrameRedirectConf the-url-to-forward-to [site-title [metadata-description]]
+
+== Example 1 ==
 
 <VirtualHost *:80>
         ServerName test.example.com
@@ -45,8 +48,18 @@ FrameRedirectDescription [metadata description] (optional)
         FrameRedirectDescription "This is a description of the page"
 </VirtualHost>
 
+== Example 2 ==
 
-== Resulting HTML ==
+<VirtualHost *:80>
+        ServerName test.example.com
+        ServerAdmin webmaster@example.com
+
+        SetHandler frameredirect
+        FrameRedirectConf http://www.example.com/test/ "Test site title" "This is a description of the page"
+</VirtualHost>
+
+
+== Resulting HTML (from both example 1 and 2) ==
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN"
                       "http://www.w3.org/TR/html4/frameset.dtd">
