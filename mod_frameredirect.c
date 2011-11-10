@@ -83,6 +83,7 @@ is_entity(const char* str)
  *   FrameRedirectTitle "<3 Sticks & Stones" => <TITLE>&lt;3 Sticks &amp; Stones</TITLE>
  *   FrameRedirectTitle Stones" => <TITLE>Stones&quot;</TITLE>
  *   FrameRedirectTitle "Sticks &amp; stones" => <TITLE>Sticks &amp; Stones</TITLE>
+ *   FrameRedirectTitle "Sticks &#38; stones" => <TITLE>Sticks &#38; Stones</TITLE>
  */
 char*
 escapestring(apr_pool_t* pool,const char* str)
@@ -113,6 +114,9 @@ escapestring(apr_pool_t* pool,const char* str)
 				break;
 		}
 	}
+
+	// If we do not find any char to escape return str.
+	if(len == strlen(str)) return (char*)str;
 
 	char *out = apr_palloc(pool, len + 2);
 
@@ -283,6 +287,17 @@ set_cfg_description(cmd_parms *parms, void *mconfig, const char *arg)
 	return NULL;
 }
 
+
+static const char* 
+set_cfg_all(cmd_parms *cmd, void *mconfig, char *arg1, char *arg2, char *arg3)
+{
+	frame_cfg *s_cfg = ap_get_module_config(parms->server->module_config, &frameredirect_module);
+	s_cfg->url = arg1;
+	s_cfg->title = arg2;
+	s_cfg->description = arg3;
+	return NULL;
+}
+
 static const command_rec frameredirect_cmds[] = {
    AP_INIT_TAKE1("FrameRedirectUrl", set_cfg_url,
  	NULL, RSRC_CONF, "Frame URL") ,
@@ -290,6 +305,8 @@ static const command_rec frameredirect_cmds[] = {
 	NULL, RSRC_CONF, "Frame title") ,
    AP_INIT_TAKE1("FrameRedirectDescription", set_cfg_description,
 	NULL, RSRC_CONF, "Frame description") ,
+   AP_INIT_TAKE123("FrameRedirectConf", set_cfg_all, 
+	NULL, RSRC_CONF, "Frame one line config"),
    { NULL }
 };
 
