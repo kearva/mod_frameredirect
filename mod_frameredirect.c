@@ -289,7 +289,7 @@ set_cfg_description(cmd_parms *parms, void *mconfig, const char *arg)
 
 
 static const char* 
-set_cfg_all(cmd_parms *cmd, void *mconfig, char *arg1, char *arg2, char *arg3)
+set_cfg_all(cmd_parms *parms, void *mconfig, char *arg1, char *arg2, char *arg3)
 {
 	frame_cfg *s_cfg = ap_get_module_config(parms->server->module_config, &frameredirect_module);
 	s_cfg->url = arg1;
@@ -306,7 +306,7 @@ static const command_rec frameredirect_cmds[] = {
    AP_INIT_TAKE1("FrameRedirectDescription", set_cfg_description,
 	NULL, RSRC_CONF, "Frame description") ,
    AP_INIT_TAKE123("FrameRedirectConf", set_cfg_all, 
-	NULL, RSRC_CONF, "Frame one line config"),
+	NULL, RSRC_CONF, "Frame one line config") ,
    { NULL }
 };
 
