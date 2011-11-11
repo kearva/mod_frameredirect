@@ -239,7 +239,7 @@ frameredirect_handler(request_rec* r)
 }
 
 static void*
-frameredirect_config(apr_pool_t* pool, char* x)
+frameredirect_config(apr_pool_t* pool, server_rec* x)
 {
 	return apr_pcalloc(pool, sizeof(frame_cfg));
 }
@@ -289,7 +289,7 @@ set_cfg_description(cmd_parms *parms, void *mconfig, const char *arg)
 
 
 static const char* 
-set_cfg_all(cmd_parms *parms, void *mconfig, char *arg1, char *arg2, char *arg3)
+set_cfg_all(cmd_parms *parms, void *mconfig, const char *arg1, const char *arg2, const char *arg3)
 {
 	frame_cfg *s_cfg = ap_get_module_config(parms->server->module_config, &frameredirect_module);
 	s_cfg->url = arg1;
