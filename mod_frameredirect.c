@@ -24,7 +24,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20111110-01"
+#define MOD_FRAMEREDIRECT_VERSION "20111208-01"
 
 typedef struct {
 	const char* url;
@@ -182,7 +182,7 @@ frameredirect_handler(request_rec* r)
 	frame_cfg* conf = ap_get_module_config(r->server->module_config, &frameredirect_module);
 
 	if (!conf->url) {
-		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: No url given for %s", r->hostname); 
+		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: No url given for %s.", r->hostname); 
 		return HTTP_FORBIDDEN;
 	}
 
@@ -193,7 +193,7 @@ frameredirect_handler(request_rec* r)
 	if (urllen < clen || urllen < rlen) {
 		/* Something is wrong with the string length, possible
 		   buffer overflow */
-		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: Possible buffer overflow"); 
+		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: Possible buffer overflow on %s.", r->hostname); 
 		return HTTP_FORBIDDEN;
 	}
 
@@ -220,19 +220,19 @@ frameredirect_handler(request_rec* r)
 	ap_rputs("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\"\n", r);
 	ap_rputs("                      \"http://www.w3.org/TR/html4/frameset.dtd\">\n", r);
 	ap_rputs("<HTML>\n", r);
-	ap_rputs("  <HEAD>\n", r);
-	ap_rprintf(r, "    <TITLE>%s</TITLE>\n", title);
-	ap_rputs("    <META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=utf-8\">\n", r);
+	ap_rputs("\t<HEAD>\n", r);
+	ap_rprintf(r, "\t\t<TITLE>%s</TITLE>\n", title);
+	ap_rputs("\t\t<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=utf-8\">\n", r);
 	if (description) {
-		ap_rprintf(r, "    <META NAME=\"Description\" CONTENT=\"%s\">\n", description);
+		ap_rprintf(r, "\t\t<META NAME=\"Description\" CONTENT=\"%s\">\n", description);
 	}
-	ap_rputs("  </HEAD>\n", r);
-	ap_rputs("  <FRAMESET ROWS=\"100%,*\" STYLE=\"border: none 0px #ffffff; margin: 0; padding:0;\">\n", r);
-	ap_rprintf(r, "    <FRAME NAME=\"_main\" MARGINWIDTH=\"10\" MARGINHEIGHT=\"10\" SRC=\"%s\">\n" , url);
-	ap_rputs("    <NOFRAMES>\n", r);
-	ap_rprintf(r, "      <P>The document is located <A HREF=\"%s\">here</A>.</P>\n", url);
-	ap_rputs("    </NOFRAMES>\n", r);
-	ap_rputs("  </FRAMESET>\n", r);
+	ap_rputs("\t</HEAD>\n", r);
+	ap_rputs("\t<FRAMESET ROWS=\"100%,*\" STYLE=\"border: none 0px #ffffff; margin: 0; padding:0;\">\n", r);
+	ap_rprintf(r, "\t\t<FRAME NAME=\"_main\" MARGINWIDTH=\"10\" MARGINHEIGHT=\"10\" SRC=\"%s\">\n" , url);
+	ap_rputs("\t\t<NOFRAMES>\n", r);
+	ap_rprintf(r, "\t\t\t<P>The document is located <A HREF=\"%s\">here</A>.</P>\n", url);
+	ap_rputs("\t\t</NOFRAMES>\n", r);
+	ap_rputs("\t</FRAMESET>\n", r);
 	ap_rputs("</HTML>\n", r);
 
 	return OK;
