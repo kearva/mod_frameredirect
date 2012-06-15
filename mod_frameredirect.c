@@ -1,5 +1,5 @@
 /*
-   Copyright 2011 Kent Are Varmedal, Jan Ingvoldstad
+   Copyright 2011, 2012 Kent Are Varmedal, Jan Ingvoldstad
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20111208-01"
+#define MOD_FRAMEREDIRECT_VERSION "20120615-02"
 
 typedef struct {
 	const char* url;
@@ -118,7 +118,7 @@ escapestring(apr_pool_t* pool,const char* str)
 	// If we do not find any char to escape return str.
 	if(len == strlen(str)) return (char*)str;
 
-	char *out = apr_palloc(pool, len + 2);
+	char *out = apr_pcalloc(pool, len + 2);
 
 	/* Encode the output string */
 	for (idx = 0, cnt = 0; str[idx] != '\0'; idx++) {
@@ -170,7 +170,7 @@ static int
 frameredirect_handler(request_rec* r)
 {
 	unsigned int rlen, clen, urllen;
-	char *url, *description = NULL, *title;
+	char *url, *uri, *description = NULL, *title;
 
 	if (!r->handler || strncmp(r->handler, "frameredirect", 9))
 		return DECLINED;
@@ -186,27 +186,30 @@ frameredirect_handler(request_rec* r)
 		return HTTP_FORBIDDEN;
 	}
 
-	rlen = strlen(r->uri);
+	rlen = strlen(r->unparsed_uri);
 	clen = strlen(conf->url);
-	urllen = clen + rlen + 10;
+	urllen = clen + rlen + 1;
 
-	if (urllen < clen || urllen < rlen) {
+	if (clen == 0 || urllen < clen || urllen < rlen) {
 		/* Something is wrong with the string length, possible
 		   buffer overflow */
 		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: Possible buffer overflow on %s.", r->hostname); 
 		return HTTP_FORBIDDEN;
 	}
 
-	url = apr_palloc(r->pool, urllen);
+	uri = apr_pcalloc(r->pool, rlen);
+	url = apr_pcalloc(r->pool, urllen);
 
 	/* Avoid double slashes when merging URI with remote URL */
-	if (r->uri[0] == '/' && conf->url[clen-1] == '/') {
+	if (uri[0] == '/' && conf->url[clen-1] == '/') {
 		strncpy(url, conf->url, clen - 1);
 		url[clen-1] = '\0';
 	} else {
 		strncpy(url, conf->url, clen);
+		url[clen] = '\0';
 	}
-	strncat(url, r->uri, rlen);
+	strncat(url, uri, rlen);
+	url[urllen-1] = '\0';
 
 	ap_set_content_type(r, "text/html; charset=utf-8");
 
@@ -221,6 +224,7 @@ frameredirect_handler(request_rec* r)
 	ap_rputs("                      \"http://www.w3.org/TR/html4/frameset.dtd\">\n", r);
 	ap_rputs("<HTML>\n", r);
 	ap_rputs("\t<HEAD>\n", r);
+	ap_rprintf(r, "\t\t<!-- mod_frameredirect version %s -->\n", MOD_FRAMEREDIRECT_VERSION);
 	ap_rprintf(r, "\t\t<TITLE>%s</TITLE>\n", title);
 	ap_rputs("\t\t<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=utf-8\">\n", r);
 	if (description) {
@@ -249,7 +253,7 @@ frameredirect_cfg_merge(apr_pool_t* pool, void* BASE, void* ADD)
 {
 	frame_cfg* base = (frame_cfg*) BASE;
 	frame_cfg* add = (frame_cfg*) ADD;
-	frame_cfg* conf = apr_palloc(pool, sizeof(frame_cfg));
+	frame_cfg* conf = apr_pcalloc(pool, sizeof(frame_cfg));
 
 	conf->url = add->url ? add->url : base->url;
 	conf->title = add->title ? add->title : base->title;
