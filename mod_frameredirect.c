@@ -24,7 +24,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20120615-02"
+#define MOD_FRAMEREDIRECT_VERSION "20131205-01"
 
 typedef struct {
 	const char* url;
@@ -199,6 +199,8 @@ frameredirect_handler(request_rec* r)
 
 	uri = apr_pcalloc(r->pool, rlen);
 	url = apr_pcalloc(r->pool, urllen);
+	
+	strncpy(uri, r->unparsed_uri, rlen);
 
 	/* Avoid double slashes when merging URI with remote URL */
 	if (uri[0] == '/' && conf->url[clen-1] == '/') {
