@@ -24,7 +24,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20131205-01"
+#define MOD_FRAMEREDIRECT_VERSION "20131205-03"
 
 typedef struct {
 	const char* url;
@@ -35,7 +35,7 @@ typedef struct {
 module AP_MODULE_DECLARE_DATA frameredirect_module;
 
 /*
- * is_alphe_char() checks whether a char is a part of the alphabeth.
+ * is_alpha_char() checks whether a char is a part of the alphabet.
  */
 int
 is_alpha_char(char c)
@@ -169,8 +169,8 @@ escapestring(apr_pool_t* pool,const char* str)
 static int
 frameredirect_handler(request_rec* r)
 {
-	unsigned int rlen, clen, urllen;
-	char *url, *uri, *description = NULL, *title;
+	unsigned int alen, rlen, clen, urllen;
+	char *args, *url, *uri, *description = NULL, *title;
 
 	if (!r->handler || strncmp(r->handler, "frameredirect", 9))
 		return DECLINED;
@@ -186,32 +186,45 @@ frameredirect_handler(request_rec* r)
 		return HTTP_FORBIDDEN;
 	}
 
-	rlen = strlen(r->unparsed_uri);
+	alen = 0;
+	rlen = strlen(r->uri);
 	clen = strlen(conf->url);
 	urllen = clen + rlen + 1;
 
-	if (clen == 0 || urllen < clen || urllen < rlen) {
+	/* Handle arguments sanely, assumes the argument delimiter is a question mark */
+	if (r->args) {
+		alen = strlen(r->args);
+		args = apr_pcalloc(r->pool, alen + 1);
+		args[0] = '?';
+		strncat(args, r->args, alen);
+		args[alen + 1] = '\0';
+		urllen += alen + 1;
+	}
+
+	if (clen == 0 || urllen < clen || urllen < rlen || urllen < alen) {
 		/* Something is wrong with the string length, possible
 		   buffer overflow */
-		ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: Possible buffer overflow on %s.", r->hostname); 
+	  ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, 0, r->server, "mod_frameredirect: Possible buffer overflow on %s (a=%d, c=%d, r=%d, u=%d).", r->hostname, alen, clen, rlen, urllen); 
 		return HTTP_FORBIDDEN;
 	}
 
-	uri = apr_pcalloc(r->pool, rlen);
 	url = apr_pcalloc(r->pool, urllen);
-	
-	strncpy(uri, r->unparsed_uri, rlen);
 
 	/* Avoid double slashes when merging URI with remote URL */
-	if (uri[0] == '/' && conf->url[clen-1] == '/') {
+	if (rlen && r->uri[0] == '/' && conf->url[clen-1] == '/') {
 		strncpy(url, conf->url, clen - 1);
 		url[clen-1] = '\0';
 	} else {
 		strncpy(url, conf->url, clen);
 		url[clen] = '\0';
 	}
-	strncat(url, uri, rlen);
-	url[urllen-1] = '\0';
+	if (rlen) {
+		strncat(url, r->uri, rlen);
+		if (alen) {
+			strncat(url, args, alen+1);
+		}
+		url[urllen-1] = '\0';
+	}
 
 	ap_set_content_type(r, "text/html; charset=utf-8");
 
