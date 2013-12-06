@@ -24,7 +24,7 @@
 #include <http_log.h>
 #include <string.h>
 
-#define MOD_FRAMEREDIRECT_VERSION "20131205-03"
+#define MOD_FRAMEREDIRECT_VERSION "20131206-02"
 
 typedef struct {
 	const char* url;
@@ -210,20 +210,26 @@ frameredirect_handler(request_rec* r)
 
 	url = apr_pcalloc(r->pool, urllen);
 
-	/* Avoid double slashes when merging URI with remote URL */
-	if (rlen && r->uri[0] == '/' && conf->url[clen-1] == '/') {
-		strncpy(url, conf->url, clen - 1);
-		url[clen-1] = '\0';
+	strncpy(url, conf->url, clen);
+
+	/*
+	 * Avoid double slashes when merging URI with remote URL, and
+	 * avoid extraneous slash at the end of a remote URL that
+	 * itself doesn't end with a slash, while preserving any args
+	 */
+	if (rlen && r->uri[0] == '/' &&
+	    (conf->url[clen - 1] == '/' ||
+	     (alen && rlen == 1))) {
+		strncat(url, ++r->uri, rlen - 1);
+		url[clen + rlen - 1] = '\0';
 	} else {
-		strncpy(url, conf->url, clen);
-		url[clen] = '\0';
-	}
-	if (rlen) {
-		strncat(url, r->uri, rlen);
-		if (alen) {
-			strncat(url, args, alen+1);
+		if (rlen != 1 || r->uri[0] != '/') {
+			strncat(url, r->uri, rlen);
+			url[clen + rlen] = '\0';
 		}
-		url[urllen-1] = '\0';
+	}
+	if (alen) {
+		strncat(url, args, alen + 1);
 	}
 
 	ap_set_content_type(r, "text/html; charset=utf-8");
